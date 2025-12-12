@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from io import BytesIO
-
+import numpy as np
 # *PAGE CONFIG -------------------------------------------------------
 st.set_page_config(
     page_title="Strumento analitico per Unmatched ⚔️",
@@ -11,9 +11,10 @@ st.set_page_config(
 
 # *VARS  -------------------------------------------------------------
 # Data path
-DATA_PATH = Path(r"vrwwh747l.csv")
+DATA_PATH = Path(r".\data")
 
-df = pd.read_csv(DATA_PATH)
+df_percentages = pd.read_csv(DATA_PATH / "vrwwh747l.csv")
+df_times_played = pd.read_csv(DATA_PATH / "flvjmyf6j.csv")  
 #----PAGINA ST-----
 
 st.title("Strumento analitico per Unmatched ⚔️")
@@ -33,16 +34,16 @@ matchup_category= st.sidebar.multiselect(
 
 # these are the different ranges where a matchup is counted as winning or losing
 def matchupers(selected_char):
-    cut_df = df.copy()
+    cut_df = df_percentages.copy()
 
-    if selected_char not in df.columns:
+    if selected_char not in df_percentages.columns:
         st.warning(f"{selected_char} non trovato nel dataset.")
         return pd.DataFrame()  # ritorna vuoto se il personaggio non c'è
 
     # Inizializza mask a False
-    mask = pd.Series(False, index=df.index)
+    mask = pd.Series(False, index=df_percentages.index)
 
-    data = df[[selected_char]]  # solo la colonna del personaggio
+    data = df_percentages[[selected_char]]  # solo la colonna del personaggio
 
     if "hard winning" in matchup_category:
         mask |= (data > 75).any(axis=1)
@@ -65,7 +66,7 @@ def matchupers(selected_char):
 
 #just so you can see the simple structure
 with st.expander("show the first rows of the dataset"):
-    st.dataframe(df.head())
+    st.dataframe(df_percentages.head())
 
 
 st.subheader("🔍 character comparison")
@@ -87,13 +88,21 @@ columns.extend(st.columns(N_col))
 with columns[0]:
     selected_character = st.selectbox(
             "choose a character, in case of an alt 1.0 use that, its the most recent version",
-            options=df["category"].unique(),
+            options=df_percentages["category"].unique(),
         )
     cut_df=matchupers(selected_character)
-    st.dataframe(cut_df[[cut_df.columns[0], selected_character]])
+    cut_df[selected_character] = (cut_df[selected_character]).astype(str) + "%"
+    cut_df=cut_df[[cut_df.columns[0], selected_character]]
+    df_times_played_temp=df_times_played[selected_character]
+
+    cut_df[selected_character + " (count)"] = df_times_played_temp.loc[cut_df.index]
+
+    st.dataframe(cut_df)
+
     # Method 1: Use to_excel directly with BytesIO (simpler)
     output = BytesIO()
     download=cut_df[[cut_df.columns[0], selected_character]]
+    download[selected_character] = download[selected_character].astype(str) + "%"
     download.to_excel(output, index=False, engine='xlsxwriter')
     output.seek(0)
     
@@ -108,14 +117,21 @@ if N_col==2 or N_col==3:
     with columns[1]:
         selected_character2 = st.selectbox(
             "choose a character, in case of an alt 1.0 use that, its the most recent version.",
-            options=df["category"].unique(),
+            options=df_percentages["category"].unique(),
         )
         cut_df=matchupers(selected_character2)
-        st.dataframe(cut_df[[cut_df.columns[0], selected_character2]])
+        cut_df[selected_character2] = (cut_df[selected_character2]).astype(str) + "%"
+        cut_df=cut_df[[cut_df.columns[0], selected_character2]]
+        df_times_played_temp=df_times_played[selected_character2]
+
+        cut_df[selected_character2 + " (count)"] = df_times_played_temp.loc[cut_df.index]
+
+        st.dataframe(cut_df)
 
         # Method 1: Use to_excel directly with BytesIO (simpler)
         output = BytesIO()
         download=cut_df[[cut_df.columns[0], selected_character2]]
+        download[selected_character2] = download[selected_character2].astype(str) + "%"
         download.to_excel(output, index=False, engine='xlsxwriter')
         output.seek(0)
 
@@ -132,13 +148,22 @@ if N_col==3:
     with columns[2]:
         selected_character3 = st.selectbox(
             "choose a character, in case of an alt 1.0 use that, its the most recent version..",
-            options=df["category"].unique(),
+            options=df_percentages["category"].unique(),
         )
         cut_df=matchupers(selected_character3)
-        st.dataframe(cut_df[[cut_df.columns[0], selected_character3]])
+
+        cut_df[selected_character3] = (cut_df[selected_character3]).astype(str) + "%"
+        cut_df=cut_df[[cut_df.columns[0], selected_character3]]
+        df_times_played_temp=df_times_played[selected_character3]
+
+        cut_df[selected_character3 + " (count)"] = df_times_played_temp.loc[cut_df.index]
+
+        st.dataframe(cut_df)
+
             # Method 1: Use to_excel directly with BytesIO (simpler)
         output = BytesIO()
         download=cut_df[[cut_df.columns[0], selected_character3]]
+        download[selected_character3] = download[selected_character3].astype(str) + "%"
         download.to_excel(output, index=False, engine='xlsxwriter')
         output.seek(0)
 
@@ -157,25 +182,27 @@ with st.expander("Matchup comparision"):
     with col1:
         left_char = st.selectbox(
             "choose a character",
-            options=df["category"].unique(),
+            options=df_percentages["category"].unique(),
         )
     with col2:
         right_char=st.selectbox(
         "choose an opponent",
-        options=df.columns[1:]
+        options=df_percentages.columns[1:]
         )
     
     # find the row corrisponding to the choosen character
-    row_index = df.index[df["category"] == left_char][0]
+    row_index = df_percentages.index[df_percentages["category"] == right_char][0]
 
     # extracting the value (percent of winrate)
-    value = df.loc[row_index, right_char]
+    value = df_percentages.loc[row_index, left_char]
+    N_times_played=df_times_played.loc[row_index, left_char]
     if value==-2:
         st.write("this matchup is not in the dataset")
     else:
         color = "red" if value < 50 else "green"
 
         st.markdown(
-            f"<h3 style='color:{color};'>{value}</h3>",
+            f"<h3 style='color:{color};'>{value}% winrate</h3>"
+            f"<p>{N_times_played} times played</p>",
             unsafe_allow_html=True
         )
