@@ -11,7 +11,7 @@ st.set_page_config(
 
 # *VARS  -------------------------------------------------------------
 # Data path
-DATA_PATH = Path(r".\data")
+DATA_PATH = Path(r"data")
 
 df_percentages = pd.read_csv(DATA_PATH / "vrwwh747l.csv")
 df_times_played = pd.read_csv(DATA_PATH / "flvjmyf6j.csv")  
