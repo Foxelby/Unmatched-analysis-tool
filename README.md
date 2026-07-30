@@ -5,4 +5,4 @@ It is a website built using Streamlit and pandas libraries, which allow for fast
 
 To run the code download the reposetry and run the command: python -m streamlit run "web page.py"
 
-the dataset are created from Tabletop League (tabletopleague.com)
+the datasets are created from Tabletop League (tabletopleague.com)
