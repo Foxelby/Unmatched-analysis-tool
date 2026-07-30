@@ -17,7 +17,7 @@ df_times_played=rp.load_data("n_games")
 
 st.title("Strumento analitico per Unmatched ⚔️")
 st.caption(
-    "analisi più comoda per i matchup in unmatched \n"\
+    "analisi più comoda per i matchup in unmatched \n"
     "Data: Tabletop League (tabletopleague.com)"
 )
 
