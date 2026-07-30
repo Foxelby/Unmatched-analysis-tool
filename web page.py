@@ -13,8 +13,8 @@ st.set_page_config(
 # Data path
 DATA_PATH = Path(r".\data")
 
-df_percentages = pd.read_csv(DATA_PATH / "vrwwh747l.csv")
-df_times_played = pd.read_csv(DATA_PATH / "flvjmyf6j.csv")  
+df_percentages = pd.read_csv(DATA_PATH / "win_rate_percentage.csv")
+df_times_played = pd.read_csv(DATA_PATH / "number_of_games.csv")  
 #----PAGINA ST-----
 
 st.title("Strumento analitico per Unmatched ⚔️")
@@ -58,7 +58,7 @@ def matchupers(selected_char):
         mask |= ((data >= 25) & (data < 40)).any(axis=1)
 
     if "hard losing" in matchup_category:
-        mask |= ((data < 25) & (data >0)).any(axis=1)
+        mask |= ((data < 25) & (data >=0)).any(axis=1)
 
     return cut_df[mask]
 
